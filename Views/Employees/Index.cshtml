@@ -1,0 +1,59 @@
+﻿@model IEnumerable<WorkProcesses.Models.AppUser>
+@using WorkProcesses.Models
+
+@{
+    ViewData["Title"] = "Сотрудники";
+}
+
+<h1>Сотрудники</h1>
+
+<div class="mb-3">
+    <a asp-action="UpdateStatus" class="btn btn-primary">Изменить мой статус</a>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Статус</th>
+            <th>ФИО</th>
+            <th>Должность</th>
+            <th>Отдел</th>
+            <th>Email</th>
+            <th>Причина отсутствия</th>
+            <th>Период</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var emp in Model)
+        {
+            <tr style="background-color:
+                @(emp.CurrentStatus == StatusType.Present ? "#d4edda" :
+                  emp.CurrentStatus == StatusType.Remote ? "#d4edda" :
+                  emp.CurrentStatus == StatusType.Absent ? "#f8d7da" : "#fff3cd")">
+                <td>
+                    <span style="font-size:1.2rem">@emp.StatusIcon</span> @emp.StatusText
+                </td>
+                <td>@emp.FullName</td>
+                <td>@emp.Position</td>
+                <td>@(emp.Department?.Name ?? "—")</td>
+                <td>@emp.Email</td>
+                <td>@(emp.AbsenceReason ?? "—")</td>
+                <td>
+                    @if (emp.AbsenceStartDate.HasValue && emp.AbsenceEndDate.HasValue)
+                    {
+                        @($"{emp.AbsenceStartDate:dd.MM.yyyy} - {emp.AbsenceEndDate:dd.MM.yyyy}")
+                    }
+                    else
+                    {
+                        @("—")
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Сотрудников пока нет. Зарегистрируйте несколько пользователей.</div>
+}

@@ -1,0 +1,77 @@
+﻿@model WorkProcesses.Models.AppUser
+@using WorkProcesses.Models
+
+@{
+    ViewData["Title"] = "Мой статус";
+}
+
+<h1>Мой статус</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <form method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label class="form-label">Текущий статус:</label>
+                <div class="alert alert-info">
+                    @Model.StatusIcon @Model.StatusText
+                    @if (!string.IsNullOrEmpty(Model.AbsenceReason))
+                    {
+                        <text> — @Model.AbsenceReason</text>
+                    }
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="status" class="form-label">Новый статус:</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="Present" selected="@(Model.CurrentStatus == StatusType.Present)">🟢 На работе</option>
+                    <option value="Remote" selected="@(Model.CurrentStatus == StatusType.Remote)">🟢💻 Удалённо</option>
+                    <option value="Absent" selected="@(Model.CurrentStatus == StatusType.Absent)">🔴 Отсутствует</option>
+                    <option value="Vacation" selected="@(Model.CurrentStatus == StatusType.Vacation)">🟡🏖️ В отпуске</option>
+                    <option value="Sick" selected="@(Model.CurrentStatus == StatusType.Sick)">🟡🤒 На больничном</option>
+                    <option value="BusinessTrip" selected="@(Model.CurrentStatus == StatusType.BusinessTrip)">🟡✈️ В командировке</option>
+                </select>
+            </div>
+
+            <div class="mb-3" id="reasonGroup" style="display:none">
+                <label for="absenceReason" class="form-label">Причина отсутствия:</label>
+                <input type="text" name="absenceReason" id="absenceReason" class="form-control" value="@Model.AbsenceReason" />
+            </div>
+
+            <div class="mb-3" id="datesGroup" style="display:none">
+                <label class="form-label">Период отсутствия:</label>
+                <div class="row">
+                    <div class="col">
+                        <input type="date" name="absenceStartDate" class="form-control" value="@(Model.AbsenceStartDate?.ToString("yyyy-MM-dd"))" />
+                        <small class="text-muted">Дата начала</small>
+                    </div>
+                    <div class="col">
+                        <input type="date" name="absenceEndDate" class="form-control" value="@(Model.AbsenceEndDate?.ToString("yyyy-MM-dd"))" />
+                        <small class="text-muted">Дата окончания</small>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <a asp-action="Index" class="btn btn-secondary">Отмена</a>
+        </form>
+    </div>
+</div>
+
+<script>
+    const statusSelect = document.getElementById('status');
+    const reasonGroup = document.getElementById('reasonGroup');
+    const datesGroup = document.getElementById('datesGroup');
+
+    function toggleFields() {
+        const val = statusSelect.value;
+        const show = (val === 'Absent' || val === 'Vacation' || val === 'Sick' || val === 'BusinessTrip');
+        reasonGroup.style.display = show ? 'block' : 'none';
+        datesGroup.style.display = show ? 'block' : 'none';
+    }
+
+    statusSelect.addEventListener('change', toggleFields);
+    toggleFields();
+</script>

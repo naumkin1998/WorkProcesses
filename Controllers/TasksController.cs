@@ -92,7 +92,8 @@ namespace WorkProcesses.Controllers
                     .ToListAsync();
             }
 
-            return View(tasks); // Передаём список заданий в представление Index.cshtml
+            return View("~/Views/Tasks/Index.cshtml", tasks);
+            //return View(tasks); // Передаём список заданий в представление Index.cshtml
         }
 
         // ==================== GET: /Tasks/Create ====================

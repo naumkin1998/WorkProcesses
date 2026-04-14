@@ -1,0 +1,59 @@
+﻿@model WorkProcesses.ViewModels.TaskViewModel
+
+@{
+    ViewData["Title"] = "Новое задание";
+}
+
+<h1>Новое задание</h1>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label">Название *</label>
+        <input asp-for="Title" class="form-control" required />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label">Описание</label>
+        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Deadline" class="form-label">Срок выполнения *</label>
+        <input asp-for="Deadline" type="datetime-local" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="TaskType" class="form-label">Тип задания</label>
+        <select asp-for="TaskType" class="form-select">
+            <option value="0">Разовое</option>
+            <option value="1">Ежедневное</option>
+            <option value="2">Еженедельное</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="AssignedToId" class="form-label">Кому назначить *</label>
+        <select asp-for="AssignedToId" class="form-select" required>
+            <option value="">— Выберите сотрудника —</option>
+            @foreach (var emp in Model.Employees)
+            {
+                <option value="@emp.Id">@emp.FullName (@emp.DepartmentName)</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Создать</button>
+    <a asp-action="Index" class="btn btn-secondary">Отмена</a>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

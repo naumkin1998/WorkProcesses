@@ -8,14 +8,14 @@
     var currentUser = await UserManager.GetUserAsync(User);
 }
 
-<a asp-action="ExportToExcel" class="btn btn-success mb-3">📊 Выгрузить все задания в Excel</a>
-
-
 <h1>Задания</h1>
 
 @if (User.IsInRole("Admin") || User.IsInRole("ServiceHead") || User.IsInRole("DepartmentHead"))
 {
     <a asp-action="Create" class="btn btn-primary mb-3">+ Новое задание</a>
+
+    <a asp-action="ExportToExcel" class="btn btn-success mb-3">📊 Выгрузить все задания в Excel</a>
+
 }
 
 @if (TempData["Success"] != null)

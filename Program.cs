@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using WorkProcesses.Data;
 using WorkProcesses.Models;
+using WorkProcesses.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +41,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 // ƒобавл€ем контроллеры с представлени€ми
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<ExcelExportService>();
 
 var app = builder.Build();
 

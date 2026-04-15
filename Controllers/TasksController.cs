@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WorkProcesses.Data;
 using WorkProcesses.Models;
+using WorkProcesses.Services;
 using WorkProcesses.ViewModels;
 
 namespace WorkProcesses.Controllers
@@ -356,5 +357,27 @@ namespace WorkProcesses.Controllers
             TempData["Success"] = "Отчёт принят!";
             return RedirectToAction(nameof(Details), new { id = task.Id });
         }
+
+        // Экспорт всех заданий в Excel
+        public async Task<IActionResult> ExportToExcel()
+        {
+            var excelService = HttpContext.RequestServices.GetRequiredService<ExcelExportService>();
+            var fileBytes = await excelService.ExportAllTasksToExcel();
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Задания_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+        }
+
+        // Экспорт отчётов по конкретному заданию
+        public async Task<IActionResult> ExportReports(int id)
+        {
+            var excelService = HttpContext.RequestServices.GetRequiredService<ExcelExportService>();
+            var fileBytes = await excelService.ExportReportsByTask(id);
+            if (fileBytes.Length == 0)
+            {
+                TempData["Error"] = "Не найдено отчётов для экспорта";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Отчёты_задания_{id}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+        }
+
     }
 }

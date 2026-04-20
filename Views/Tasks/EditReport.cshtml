@@ -1,0 +1,29 @@
+﻿@model WorkProcesses.Models.Report
+
+@{
+    ViewData["Title"] = "Редактирование отчёта";
+}
+
+<h1>Редактирование отчёта</h1>
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.Id" />
+
+    <div class="mb-3">
+        <label class="form-label">Задание: @Model.TaskItem?.Title</label>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Дата отчёта</label>
+        <input type="text" class="form-control" value="@Model.ForDate.ToString("dd.MM.yyyy")" readonly />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Text" class="form-label">Текст отчёта</label>
+        <textarea name="text" class="form-control" rows="5" required>@Model.Text</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+    <a asp-action="Details" asp-route-id="@Model.TaskItemId" class="btn btn-secondary">Отмена</a>
+</form>

@@ -277,22 +277,38 @@ namespace WorkProcesses.Controllers
             if (task == null)
                 return NotFound();
 
-            // Проверка: отчёт может сдать только тот, кому задание назначено
+            // Проверка: задание уже выполнено?
+            if (task.IsCompleted)
+            {
+                TempData["Error"] = "Задание уже выполнено, нельзя сдать новый отчёт";
+                return RedirectToAction(nameof(Details), new { id = taskId });
+            }
+
+            // Проверка: отчёт может сдать только тот, кому назначено
             if (task.AssignedToId != currentUser.Id)
             {
                 TempData["Error"] = "Вы не можете сдать отчёт за другого сотрудника";
                 return RedirectToAction(nameof(Details), new { id = taskId });
             }
 
-            // Создаём новый отчёт
+            // Для ежедневных/еженедельных заданий можно добавить проверку на уникальность даты (опционально)
+            // Например, чтобы нельзя было сдать два отчёта за один день.
+            var existingReport = await _context.Reports
+                .AnyAsync(r => r.TaskItemId == taskId && r.ForDate.Date == forDate.Date);
+            if (existingReport && task.TaskType != TaskType.Single)
+            {
+                TempData["Error"] = "Отчёт за эту дату уже сдан";
+                return RedirectToAction(nameof(Details), new { id = taskId });
+            }
+
             var report = new Report
             {
                 TaskItemId = taskId,
                 AppUserId = currentUser.Id,
                 Text = reportText,
-                ForDate = forDate,          // Дата, за которую отчитывается сотрудник
-                ReportedAt = DateTime.Now,  // Время сдачи отчёта
-                IsApproved = false          // По умолчанию не принят
+                ForDate = forDate,
+                ReportedAt = DateTime.Now,
+                IsApproved = false
             };
 
             _context.Reports.Add(report);
@@ -316,7 +332,6 @@ namespace WorkProcesses.Controllers
             var currentUser = await _userManager.GetUserAsync(User);
             if (currentUser == null) return Challenge();
 
-            // Загружаем отчёт вместе с заданием
             var report = await _context.Reports
                 .Include(r => r.TaskItem)
                 .FirstOrDefaultAsync(r => r.Id == reportId);
@@ -326,10 +341,7 @@ namespace WorkProcesses.Controllers
 
             var task = report.TaskItem;
 
-            // Проверка прав на принятие отчёта:
-            // - Админ или начальник службы
-            // - Начальник отдела, если задание выдано сотруднику его отдела
-            // - Постановщик задания (кто выдал)
+            // Проверка прав: принять может начальник отдела, начальник службы или админ
             var canApprove = User.IsInRole(RoleNames.Admin) ||
                              User.IsInRole(RoleNames.ServiceHead) ||
                              (User.IsInRole(RoleNames.DepartmentHead) && task.AssignedTo?.DepartmentId == currentUser.DepartmentId) ||
@@ -341,12 +353,18 @@ namespace WorkProcesses.Controllers
                 return RedirectToAction(nameof(Details), new { id = task.Id });
             }
 
-            // Принимаем отчёт
+            // Если задание уже выполнено — не даём принять ещё один отчёт
+            if (task.IsCompleted)
+            {
+                TempData["Error"] = "Задание уже выполнено, нельзя принять дополнительный отчёт";
+                return RedirectToAction(nameof(Details), new { id = task.Id });
+            }
+
             report.IsApproved = true;
             report.ApprovedAt = DateTime.Now;
             report.ApprovedById = currentUser.Id;
 
-            // Если задание разовое (Single) — отмечаем как полностью выполненное
+            // Если задание разовое — помечаем как выполненное
             if (task.TaskType == TaskType.Single)
             {
                 task.IsCompleted = true;
@@ -379,5 +397,57 @@ namespace WorkProcesses.Controllers
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Отчёты_задания_{id}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
         }
 
+
+
+        // ==================== POST: /Tasks/EditReport  ====================
+        /// <summary>
+        /// Редактирование отчёта (только для автора, пока не принят)
+        /// </summary>
+        /// <param name="id">ID отчёта, который нужно отредактировать</param>
+        public async Task<IActionResult> EditReport(int id)
+        {
+            var report = await _context.Reports
+                .Include(r => r.TaskItem)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (report == null) return NotFound();
+
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null) return Challenge();
+
+            // Проверка: только автор отчёта и отчёт ещё не принят
+            if (report.AppUserId != currentUser.Id || report.IsApproved)
+            {
+                TempData["Error"] = "Редактирование недоступно";
+                return RedirectToAction(nameof(Details), new { id = report.TaskItemId });
+            }
+
+            return View(report);
+        }
+
+        // POST: Сохранение отредактированного отчёта
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditReport(int id, string text)
+        {
+            var report = await _context.Reports.FindAsync(id);
+            if (report == null) return NotFound();
+
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null) return Challenge();
+
+            if (report.AppUserId != currentUser.Id || report.IsApproved)
+            {
+                TempData["Error"] = "Нельзя редактировать этот отчёт";
+                return RedirectToAction(nameof(Details), new { id = report.TaskItemId });
+            }
+
+            report.Text = text;
+            report.ReportedAt = DateTime.Now; // обновляем дату последнего изменения
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Отчёт обновлён";
+            return RedirectToAction(nameof(Details), new { id = report.TaskItemId });
+        }
     }
 }

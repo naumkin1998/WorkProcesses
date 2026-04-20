@@ -75,7 +75,8 @@
                         <input type="hidden" name="taskId" value="@Model.Id" />
                         <div class="mb-3">
                             <label class="form-label">Дата отчёта</label>
-                            <input type="date" name="forDate" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                            <input type="date" name="forDate" class="form-control" value=
+                            "@DateTime.Now.ToString("yyyy-MM-dd")" required />
                             <small class="text-muted">Для ежедневных/еженедельных заданий — укажите дату</small>
                         </div>
                         <div class="mb-3">
@@ -121,6 +122,11 @@
                                         }
                                     </td>
                                     <td>
+                                        @if (!report.IsApproved && report.AppUserId == currentUser?.Id)
+
+                                        {
+                                            <a asp-action="EditReport" asp-route-id="@report.Id" class="btn btn-sm btn-warning">✏️ Редактировать</a>
+                                        }
                                         @if (!report.IsApproved && canApprove)
                                         {
                                             <form method="post" asp-action="ApproveReport" style="display:inline">

@@ -21,6 +21,8 @@ namespace WorkProcesses.Models
         public AppUser? AssignedBy { get; set; }
         public List<Report> Reports { get; set; } = new();
 
+        public List<TaskAssignment> Assignments { get; set; } = new();
+
         /// <summary>
         /// Просрочено?
         /// </summary>

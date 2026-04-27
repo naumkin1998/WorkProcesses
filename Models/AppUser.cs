@@ -93,6 +93,10 @@ namespace WorkProcesses.Models
         /// </summary>
         public List<Report> ApprovedReports { get; set; } = new();
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<TaskAssignment> TaskAssignments { get; set; } = new();
     }
 }
 

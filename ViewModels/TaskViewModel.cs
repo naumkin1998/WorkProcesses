@@ -13,10 +13,14 @@ namespace WorkProcesses.ViewModels
         public string AssignedToId { get; set; } = string.Empty;
 
         // Список сотрудников для выбора (кому назначить)
-        public List<EmployeeSelectItem> Employees { get; set; } = new();
+        //public List<EmployeeSelectItem> Employees { get; set; } = new();
 
         // Для отображения списка заданий
         public List<TaskItem> Tasks { get; set; } = new();
+
+        // В ViewModels/TaskViewModel.cs добавим:
+        public List<string> SelectedEmployeeIds { get; set; } = new(); // для хранения ID выбранных сотрудников
+        public List<EmployeeSelectItem> Employees { get; set; } = new(); // весь список сотрудников, доступных для выбора
     }
 
     public class EmployeeSelectItem

@@ -40,6 +40,8 @@ namespace WorkProcesses.Data
         /// </summary>
         public DbSet<Report> Reports { get; set; }
 
+        public DbSet<TaskAssignment> TaskAssignments { get; set; }
+
         /// <summary>
         /// Настройка связей между таблицами (Fluent API)
         /// Этот метод вызывается при создании модели БД
@@ -126,6 +128,21 @@ namespace WorkProcesses.Data
             // Индекс для поиска отчётов по сотруднику
             builder.Entity<Report>()
                 .HasIndex(r => r.AppUserId);
+
+            builder.Entity<TaskAssignment>(entity =>
+            {
+                entity.HasOne(a => a.TaskItem)
+                    .WithMany(t => t.Assignments)
+                    .HasForeignKey(a => a.TaskItemId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(a => a.AppUser)
+                    .WithMany(u => u.TaskAssignments)
+                    .HasForeignKey(a => a.AppUserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(a => new { a.TaskItemId, a.AppUserId }).IsUnique(); // один исполнитель на задание не более одного раза
+            });
         }
     }
 }

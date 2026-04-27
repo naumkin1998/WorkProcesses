@@ -40,14 +40,14 @@
     </div>
 
     <div class="mb-3">
-        <label asp-for="AssignedToId" class="form-label">Кому назначить *</label>
-        <select asp-for="AssignedToId" class="form-select" required>
-            <option value="">— Выберите сотрудника —</option>
+        <label asp-for="SelectedEmployeeIds" class="form-label">Кому назначить (можно несколько)</label>
+        <select asp-for="SelectedEmployeeIds" class="form-select" multiple required>
             @foreach (var emp in Model.Employees)
             {
                 <option value="@emp.Id">@emp.FullName (@emp.DepartmentName)</option>
             }
         </select>
+        <small class="text-muted">Удерживайте Ctrl для выбора нескольких</small>
     </div>
 
     <button type="submit" class="btn btn-primary">Создать</button>

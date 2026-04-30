@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using WorkProcesses.Data;
 using WorkProcesses.Models;
 using WorkProcesses.Services;
+using WorkProcesses.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,13 @@ builder.Services.ConfigureApplicationCookie(options =>
 // Добавляем контроллеры с представлениями
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<ExcelExportService>();
+
+// Регистрация репозиториев
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+
+// Регистрация сервисов
+builder.Services.AddScoped<ITaskService, TaskService>();
 
 var app = builder.Build();
 

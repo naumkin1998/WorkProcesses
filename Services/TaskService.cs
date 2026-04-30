@@ -131,6 +131,7 @@ namespace WorkProcesses.Services
             return true;
         }
 
+
         public async Task<bool> ApproveReportAsync(int reportId, string approverId, bool isAdmin, bool isServiceHead, bool isDepartmentHead, int? departmentId)
         {
             var report = await _context.Reports

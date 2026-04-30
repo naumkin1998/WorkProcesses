@@ -24,6 +24,89 @@ namespace WorkProcesses.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DispatchCenters",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DispatchCenters", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Priorities",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Level = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Priorities", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Projects",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IncludeInMonthlyPlan = table.Column<bool>(type: "bit", nullable: false),
+                    IncludeInWeeklyPlan = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Projects", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ResourceTypes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ResourceTypes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WorkBases",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkBases", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WorkTypes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkTypes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -42,6 +125,26 @@ namespace WorkProcesses.Migrations
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Resources",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ResourceTypeId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Resources", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Resources_ResourceTypes_ResourceTypeId",
+                        column: x => x.ResourceTypeId,
+                        principalTable: "ResourceTypes",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -151,7 +254,8 @@ namespace WorkProcesses.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    HeadId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    HeadId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    DispatchCenterId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -162,6 +266,11 @@ namespace WorkProcesses.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Divisions_DispatchCenters_DispatchCenterId",
+                        column: x => x.DispatchCenterId,
+                        principalTable: "DispatchCenters",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -177,7 +286,19 @@ namespace WorkProcesses.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsCompleted = table.Column<bool>(type: "bit", nullable: false),
                     AssignedToId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    AssignedById = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    AssignedById = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ResourceId = table.Column<int>(type: "int", nullable: true),
+                    WorkTypeId = table.Column<int>(type: "int", nullable: true),
+                    WorkBasisId = table.Column<int>(type: "int", nullable: true),
+                    WorkBasisComment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PriorityId = table.Column<int>(type: "int", nullable: true),
+                    ProjectId = table.Column<int>(type: "int", nullable: true),
+                    StartTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsImportant = table.Column<bool>(type: "bit", nullable: false),
+                    ReportPeriodicity = table.Column<int>(type: "int", nullable: false),
+                    ReportTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ReportWeekDay = table.Column<int>(type: "int", nullable: true),
+                    ReportMonthDay = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -194,6 +315,31 @@ namespace WorkProcesses.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Tasks_Priorities_PriorityId",
+                        column: x => x.PriorityId,
+                        principalTable: "Priorities",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Tasks_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Tasks_Resources_ResourceId",
+                        column: x => x.ResourceId,
+                        principalTable: "Resources",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Tasks_WorkBases_WorkBasisId",
+                        column: x => x.WorkBasisId,
+                        principalTable: "WorkBases",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Tasks_WorkTypes_WorkTypeId",
+                        column: x => x.WorkTypeId,
+                        principalTable: "WorkTypes",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -261,6 +407,62 @@ namespace WorkProcesses.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "TaskAssignments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TaskItemId = table.Column<int>(type: "int", nullable: false),
+                    AppUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    IsCompleted = table.Column<bool>(type: "bit", nullable: false),
+                    IsInWork = table.Column<bool>(type: "bit", nullable: false),
+                    WorkSeconds = table.Column<int>(type: "int", nullable: false),
+                    WorkStartTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TaskAssignments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TaskAssignments_AspNetUsers_AppUserId",
+                        column: x => x.AppUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TaskAssignments_Tasks_TaskItemId",
+                        column: x => x.TaskItemId,
+                        principalTable: "Tasks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ResourceDepartments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ResourceId = table.Column<int>(type: "int", nullable: false),
+                    DepartmentId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ResourceDepartments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ResourceDepartments_Departments_DepartmentId",
+                        column: x => x.DepartmentId,
+                        principalTable: "Departments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ResourceDepartments_Resources_ResourceId",
+                        column: x => x.ResourceId,
+                        principalTable: "Resources",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -316,6 +518,11 @@ namespace WorkProcesses.Migrations
                 column: "ManagerId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Divisions_DispatchCenterId",
+                table: "Divisions",
+                column: "DispatchCenterId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Divisions_HeadId",
                 table: "Divisions",
                 column: "HeadId");
@@ -336,6 +543,32 @@ namespace WorkProcesses.Migrations
                 column: "TaskItemId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ResourceDepartments_DepartmentId",
+                table: "ResourceDepartments",
+                column: "DepartmentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ResourceDepartments_ResourceId",
+                table: "ResourceDepartments",
+                column: "ResourceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Resources_ResourceTypeId",
+                table: "Resources",
+                column: "ResourceTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TaskAssignments_AppUserId",
+                table: "TaskAssignments",
+                column: "AppUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TaskAssignments_TaskItemId_AppUserId",
+                table: "TaskAssignments",
+                columns: new[] { "TaskItemId", "AppUserId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Tasks_AssignedById",
                 table: "Tasks",
                 column: "AssignedById");
@@ -349,6 +582,31 @@ namespace WorkProcesses.Migrations
                 name: "IX_Tasks_Deadline_IsCompleted",
                 table: "Tasks",
                 columns: new[] { "Deadline", "IsCompleted" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tasks_PriorityId",
+                table: "Tasks",
+                column: "PriorityId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tasks_ProjectId",
+                table: "Tasks",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tasks_ResourceId",
+                table: "Tasks",
+                column: "ResourceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tasks_WorkBasisId",
+                table: "Tasks",
+                column: "WorkBasisId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tasks_WorkTypeId",
+                table: "Tasks",
+                column: "WorkTypeId");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_AspNetUserClaims_AspNetUsers_UserId",
@@ -411,10 +669,34 @@ namespace WorkProcesses.Migrations
                 name: "Reports");
 
             migrationBuilder.DropTable(
+                name: "ResourceDepartments");
+
+            migrationBuilder.DropTable(
+                name: "TaskAssignments");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "Tasks");
+
+            migrationBuilder.DropTable(
+                name: "Priorities");
+
+            migrationBuilder.DropTable(
+                name: "Projects");
+
+            migrationBuilder.DropTable(
+                name: "Resources");
+
+            migrationBuilder.DropTable(
+                name: "WorkBases");
+
+            migrationBuilder.DropTable(
+                name: "WorkTypes");
+
+            migrationBuilder.DropTable(
+                name: "ResourceTypes");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
@@ -424,6 +706,9 @@ namespace WorkProcesses.Migrations
 
             migrationBuilder.DropTable(
                 name: "Divisions");
+
+            migrationBuilder.DropTable(
+                name: "DispatchCenters");
         }
     }
 }

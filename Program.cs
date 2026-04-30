@@ -34,9 +34,9 @@ builder.Services.Configure<IdentityOptions>(options =>
 // Настройка cookies (страницы входа/выхода)
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/Account/Login";
-    options.LogoutPath = "/Account/Logout";
-    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.LoginPath = "/Identity/Account/Login";
+    options.LogoutPath = "/Identity/Account/Logout";
+    options.AccessDeniedPath = "/Identity/AccessDenied";
     options.ExpireTimeSpan = TimeSpan.FromDays(7);
 });
 
@@ -68,12 +68,14 @@ app.UseRouting();
 app.UseAuthentication();   // Аутентификация (кто пользователь)
 app.UseAuthorization();    // Авторизация (что пользователь может)
 
-
-app.MapRazorPages(); // для страниц Identity (Login, Register и т.д.)
-
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+
+app.MapRazorPages(); // для страниц Identity (Login, Register и т.д.)
+
+
 
 // Инициализация базы данных (создание ролей и админа)
 using (var scope = app.Services.CreateScope())

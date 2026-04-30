@@ -12,7 +12,7 @@ using WorkProcesses.Data;
 namespace WorkProcesses.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260412114016_InitialCreate")]
+    [Migration("20260430155525_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -277,6 +277,23 @@ namespace WorkProcesses.Migrations
                     b.ToTable("Departments");
                 });
 
+            modelBuilder.Entity("WorkProcesses.Models.DispatchCenter", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DispatchCenters");
+                });
+
             modelBuilder.Entity("WorkProcesses.Models.Division", b =>
                 {
                     b.Property<int>("Id")
@@ -284,6 +301,9 @@ namespace WorkProcesses.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int?>("DispatchCenterId")
+                        .HasColumnType("int");
 
                     b.Property<string>("HeadId")
                         .HasColumnType("nvarchar(450)");
@@ -294,9 +314,57 @@ namespace WorkProcesses.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DispatchCenterId");
+
                     b.HasIndex("HeadId");
 
                     b.ToTable("Divisions");
+                });
+
+            modelBuilder.Entity("WorkProcesses.Models.Priority", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Priorities");
+                });
+
+            modelBuilder.Entity("WorkProcesses.Models.Project", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IncludeInMonthlyPlan")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IncludeInWeeklyPlan")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Projects");
                 });
 
             modelBuilder.Entity("WorkProcesses.Models.Report", b =>
@@ -344,6 +412,108 @@ namespace WorkProcesses.Migrations
                     b.ToTable("Reports");
                 });
 
+            modelBuilder.Entity("WorkProcesses.Models.Resource", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ResourceTypeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ResourceTypeId");
+
+                    b.ToTable("Resources");
+                });
+
+            modelBuilder.Entity("WorkProcesses.Models.ResourceDepartment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ResourceId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.HasIndex("ResourceId");
+
+                    b.ToTable("ResourceDepartments");
+                });
+
+            modelBuilder.Entity("WorkProcesses.Models.ResourceType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ResourceTypes");
+                });
+
+            modelBuilder.Entity("WorkProcesses.Models.TaskAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AppUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsInWork")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("TaskItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WorkSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("WorkStartTime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppUserId");
+
+                    b.HasIndex("TaskItemId", "AppUserId")
+                        .IsUnique();
+
+                    b.ToTable("TaskAssignments");
+                });
+
             modelBuilder.Entity("WorkProcesses.Models.TaskItem", b =>
                 {
                     b.Property<int>("Id")
@@ -373,6 +543,33 @@ namespace WorkProcesses.Migrations
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsImportant")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("PriorityId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReportMonthDay")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReportPeriodicity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReportTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ReportWeekDay")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ResourceId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("StartTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("TaskType")
                         .HasColumnType("int");
 
@@ -380,15 +577,71 @@ namespace WorkProcesses.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("WorkBasisComment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("WorkBasisId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("WorkTypeId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AssignedById");
 
                     b.HasIndex("AssignedToId");
 
+                    b.HasIndex("PriorityId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("ResourceId");
+
+                    b.HasIndex("WorkBasisId");
+
+                    b.HasIndex("WorkTypeId");
+
                     b.HasIndex("Deadline", "IsCompleted");
 
                     b.ToTable("Tasks");
+                });
+
+            modelBuilder.Entity("WorkProcesses.Models.WorkBasis", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WorkBases");
+                });
+
+            modelBuilder.Entity("WorkProcesses.Models.WorkType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WorkTypes");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -471,10 +724,16 @@ namespace WorkProcesses.Migrations
 
             modelBuilder.Entity("WorkProcesses.Models.Division", b =>
                 {
+                    b.HasOne("WorkProcesses.Models.DispatchCenter", "DispatchCenter")
+                        .WithMany("Divisions")
+                        .HasForeignKey("DispatchCenterId");
+
                     b.HasOne("WorkProcesses.Models.AppUser", "Head")
                         .WithMany()
                         .HasForeignKey("HeadId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("DispatchCenter");
 
                     b.Navigation("Head");
                 });
@@ -505,6 +764,53 @@ namespace WorkProcesses.Migrations
                     b.Navigation("TaskItem");
                 });
 
+            modelBuilder.Entity("WorkProcesses.Models.Resource", b =>
+                {
+                    b.HasOne("WorkProcesses.Models.ResourceType", "ResourceType")
+                        .WithMany()
+                        .HasForeignKey("ResourceTypeId");
+
+                    b.Navigation("ResourceType");
+                });
+
+            modelBuilder.Entity("WorkProcesses.Models.ResourceDepartment", b =>
+                {
+                    b.HasOne("WorkProcesses.Models.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WorkProcesses.Models.Resource", "Resource")
+                        .WithMany("ResourceDepartments")
+                        .HasForeignKey("ResourceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Department");
+
+                    b.Navigation("Resource");
+                });
+
+            modelBuilder.Entity("WorkProcesses.Models.TaskAssignment", b =>
+                {
+                    b.HasOne("WorkProcesses.Models.AppUser", "AppUser")
+                        .WithMany("TaskAssignments")
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WorkProcesses.Models.TaskItem", "TaskItem")
+                        .WithMany("Assignments")
+                        .HasForeignKey("TaskItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AppUser");
+
+                    b.Navigation("TaskItem");
+                });
+
             modelBuilder.Entity("WorkProcesses.Models.TaskItem", b =>
                 {
                     b.HasOne("WorkProcesses.Models.AppUser", "AssignedBy")
@@ -519,9 +825,39 @@ namespace WorkProcesses.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("WorkProcesses.Models.Priority", "Priority")
+                        .WithMany()
+                        .HasForeignKey("PriorityId");
+
+                    b.HasOne("WorkProcesses.Models.Project", "Project")
+                        .WithMany("Tasks")
+                        .HasForeignKey("ProjectId");
+
+                    b.HasOne("WorkProcesses.Models.Resource", "Resource")
+                        .WithMany()
+                        .HasForeignKey("ResourceId");
+
+                    b.HasOne("WorkProcesses.Models.WorkBasis", "WorkBasis")
+                        .WithMany()
+                        .HasForeignKey("WorkBasisId");
+
+                    b.HasOne("WorkProcesses.Models.WorkType", "WorkType")
+                        .WithMany()
+                        .HasForeignKey("WorkTypeId");
+
                     b.Navigation("AssignedBy");
 
                     b.Navigation("AssignedTo");
+
+                    b.Navigation("Priority");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("Resource");
+
+                    b.Navigation("WorkBasis");
+
+                    b.Navigation("WorkType");
                 });
 
             modelBuilder.Entity("WorkProcesses.Models.AppUser", b =>
@@ -533,6 +869,8 @@ namespace WorkProcesses.Migrations
                     b.Navigation("IssuedTasks");
 
                     b.Navigation("Reports");
+
+                    b.Navigation("TaskAssignments");
                 });
 
             modelBuilder.Entity("WorkProcesses.Models.Department", b =>
@@ -540,13 +878,30 @@ namespace WorkProcesses.Migrations
                     b.Navigation("Employees");
                 });
 
+            modelBuilder.Entity("WorkProcesses.Models.DispatchCenter", b =>
+                {
+                    b.Navigation("Divisions");
+                });
+
             modelBuilder.Entity("WorkProcesses.Models.Division", b =>
                 {
                     b.Navigation("Departments");
                 });
 
+            modelBuilder.Entity("WorkProcesses.Models.Project", b =>
+                {
+                    b.Navigation("Tasks");
+                });
+
+            modelBuilder.Entity("WorkProcesses.Models.Resource", b =>
+                {
+                    b.Navigation("ResourceDepartments");
+                });
+
             modelBuilder.Entity("WorkProcesses.Models.TaskItem", b =>
                 {
+                    b.Navigation("Assignments");
+
                     b.Navigation("Reports");
                 });
 #pragma warning restore 612, 618

@@ -39,5 +39,30 @@ namespace WorkProcesses.Models
             if (managerDepartmentId == AssignedTo?.DepartmentId) return true;  // Свой отдел
             return AssignedById == managerId;  // Сам выдал
         }
+
+        // Справочники
+        public int? ResourceId { get; set; }
+        public Resource? Resource { get; set; }
+        public int? WorkTypeId { get; set; }
+        public WorkType? WorkType { get; set; }
+        public int? WorkBasisId { get; set; }
+        public WorkBasis? WorkBasis { get; set; }
+        public string? WorkBasisComment { get; set; } // дополнительные комментарии к основанию
+        public int? PriorityId { get; set; }
+        public Priority? Priority { get; set; }
+        public int? ProjectId { get; set; }
+        public Project? Project { get; set; }
+
+        // Время начала (стартовый срок)
+        public DateTime? StartTime { get; set; }
+
+        // Флаг важности
+        public bool IsImportant { get; set; }
+
+        // Периодичность отчёта
+        public ReportPeriodicity ReportPeriodicity { get; set; } = ReportPeriodicity.None;
+        public DateTime? ReportTime { get; set; }          // время сдачи отчёта (например, 18:00)
+        public DayOfWeek? ReportWeekDay { get; set; }      // для еженедельных – день недели
+        public int? ReportMonthDay { get; set; }           // для месячных – число месяца (1-31)
     }
 }

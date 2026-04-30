@@ -50,6 +50,7 @@ builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 
 // Регистрация сервисов
 builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<ExcelExportService>();
 
 var app = builder.Build();
 

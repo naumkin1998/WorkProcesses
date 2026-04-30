@@ -16,4 +16,4 @@ namespace WorkProcesses.Repositories
         void Delete(T entity);
         Task SaveChangesAsync();
     }
-} 
+}

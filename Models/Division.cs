@@ -25,5 +25,8 @@
         /// Список отделов в службе
         /// </summary>
         public List<Department> Departments { get; set; } = new();
+
+        public int? DispatchCenterId { get; set; }
+        public DispatchCenter? DispatchCenter { get; set; }
     }
 }

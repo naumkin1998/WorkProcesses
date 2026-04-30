@@ -50,13 +50,25 @@ namespace WorkProcesses.Services
                 Title = model.Title,
                 Description = model.Description,
                 Deadline = model.Deadline,
-                TaskType = model.TaskType,
+                StartTime = model.StartTime,
+                TaskType = model.TaskType,  // можно позже заменить на ReportPeriodicity
                 AssignedById = assignedById,
                 AssignedToId = selectedEmployeeIds.FirstOrDefault() ?? string.Empty,
                 CreatedAt = DateTime.Now,
-                IsCompleted = false
+                IsCompleted = false,
+                // Новые поля
+                ResourceId = model.ResourceId,
+                WorkTypeId = model.WorkTypeId,
+                WorkBasisId = model.WorkBasisId,
+                WorkBasisComment = model.WorkBasisComment,
+                PriorityId = model.PriorityId,
+                ProjectId = model.ProjectId,
+                IsImportant = model.IsImportant,
+                ReportPeriodicity = model.ReportPeriodicity,
+                ReportTime = model.ReportTime,
+                ReportWeekDay = model.ReportWeekDay,
+                ReportMonthDay = model.ReportMonthDay
             };
-
             _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
 
@@ -74,7 +86,6 @@ namespace WorkProcesses.Services
                 _context.TaskAssignments.Add(assignment);
             }
             await _context.SaveChangesAsync();
-
             return task;
         }
 
@@ -257,5 +268,25 @@ namespace WorkProcesses.Services
             var report = await _context.Reports.FindAsync(reportId);
             return report?.TaskItemId ?? 0;
         }
+
+        public async Task<List<ReferenceItem>> GetAvailableResourcesAsync(string userId, bool isAdmin, bool isServiceHead, bool isDepartmentHead, int? departmentId)
+        {
+            IQueryable<Resource> query = _context.Resources;
+            if (!isAdmin && !isServiceHead && isDepartmentHead && departmentId.HasValue)
+            {
+                query = query.Where(r => r.ResourceDepartments.Any(rd => rd.DepartmentId == departmentId));
+            }
+            else if (!isAdmin && !isServiceHead && !isDepartmentHead)
+            {
+                return new List<ReferenceItem>();
+            }
+            var resources = await query.Select(r => new ReferenceItem { Id = r.Id, Name = r.Name }).ToListAsync();
+            return resources;
+        }
+
+        public async Task<List<ReferenceItem>> GetWorkTypesAsync() => await _context.WorkTypes.Select(w => new ReferenceItem { Id = w.Id, Name = w.Name }).ToListAsync();
+        public async Task<List<ReferenceItem>> GetWorkBasesAsync() => await _context.WorkBases.Select(w => new ReferenceItem { Id = w.Id, Name = w.Name }).ToListAsync();
+        public async Task<List<ReferenceItem>> GetPrioritiesAsync() => await _context.Priorities.Select(p => new ReferenceItem { Id = p.Id, Name = p.Name }).ToListAsync();
+        public async Task<List<ReferenceItem>> GetProjectsAsync() => await _context.Projects.Select(p => new ReferenceItem { Id = p.Id, Name = p.Name }).ToListAsync();
     }
 }

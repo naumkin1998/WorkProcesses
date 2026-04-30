@@ -1,53 +1,165 @@
-﻿@model WorkProcesses.ViewModels.TaskViewModel
-
+﻿@model TaskViewModel
+@using WorkProcesses.Models
+@using WorkProcesses.ViewModels
 @{
     ViewData["Title"] = "Новое задание";
 }
 
 <h1>Новое задание</h1>
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
-
 <form method="post">
     @Html.AntiForgeryToken()
-    
-    <div class="mb-3">
-        <label asp-for="Title" class="form-label">Название *</label>
-        <input asp-for="Title" class="form-control" required />
-        <span asp-validation-for="Title" class="text-danger"></span>
-    </div>
 
-    <div class="mb-3">
-        <label asp-for="Description" class="form-label">Описание</label>
-        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label asp-for="Title" class="form-label">Название *</label>
+                <input asp-for="Title" class="form-control" required />
+            </div>
 
-    <div class="mb-3">
-        <label asp-for="Deadline" class="form-label">Срок выполнения *</label>
-        <input asp-for="Deadline" type="datetime-local" class="form-control" required />
-    </div>
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label">Описание</label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            </div>
 
-    <div class="mb-3">
-        <label asp-for="TaskType" class="form-label">Тип задания</label>
-        <select asp-for="TaskType" class="form-select">
-            <option value="0">Разовое</option>
-            <option value="1">Ежедневное</option>
-            <option value="2">Еженедельное</option>
-        </select>
-    </div>
+            <div class="mb-3">
+                <label asp-for="StartTime" class="form-label">Дата начала</label>
+                <input asp-for="StartTime" type="datetime-local" class="form-control" />
+            </div>
 
-    <div class="mb-3">
-        <label asp-for="SelectedEmployeeIds" class="form-label">Кому назначить (можно несколько)</label>
-        <select asp-for="SelectedEmployeeIds" class="form-select" multiple size="5" required>
-            @foreach (var emp in Model.Employees)
-            {
-                <option value="@emp.Id">@emp.FullName (@emp.DepartmentName)</option>
-            }
-        </select>
-        <small class="text-muted">Удерживайте Ctrl (Cmd на Mac) для выбора нескольких сотрудников</small>
+            <div class="mb-3">
+                <label asp-for="Deadline" class="form-label">Срок выполнения *</label>
+                <input asp-for="Deadline" type="datetime-local" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ResourceId" class="form-label">Ресурс</label>
+                <select asp-for="ResourceId" class="form-select">
+                    <option value="">— Не выбран —</option>
+                    @foreach (var r in Model.Resources)
+
+                    {
+                        <option value="@r.Id">@r.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="WorkTypeId" class="form-label">Вид работ</label>
+                <select asp-for="WorkTypeId" class="form-select">
+                    <option value="">— Не выбран —</option>
+                    @foreach (var wt in Model.WorkTypes)
+
+                    {
+                        <option value="@wt.Id">@wt.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="WorkBasisId" class="form-label">Основание</label>
+                <select asp-for="WorkBasisId" class="form-select">
+                    <option value="">— Не выбрано —</option>
+                    @foreach (var wb in Model.WorkBases)
+
+                    {
+                        <option value="@wb.Id">@wb.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="WorkBasisComment" class="form-label">Комментарий к основанию</label>
+                <input asp-for="WorkBasisComment" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="PriorityId" class="form-label">Приоритет</label>
+                <select asp-for="PriorityId" class="form-select">
+                    <option value="">— Не выбран —</option>
+                    @foreach (var p in Model.Priorities)
+
+                    {
+                        <option value="@p.Id">@p.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ProjectId" class="form-label">Проект</label>
+                <select asp-for="ProjectId" class="form-select">
+                    <option value="">— Не выбран —</option>
+                    @foreach (var proj in Model.Projects)
+
+                    {
+                        <option value="@proj.Id">@proj.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3 form-check">
+                <input asp-for="IsImportant" class="form-check-input" />
+                <label asp-for="IsImportant" class="form-check-label">Задание повышенной важности</label>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Исполнители *</label>
+                <select asp-for="SelectedEmployeeIds" class="form-select" multiple size="8" required>
+                    @foreach (var emp in Model.Employees)
+
+                    {
+                        <option value="@emp.Id">@emp.FullName (@emp.DepartmentName)</option>
+                    }
+                </select>
+                <small class="text-muted">Удерживайте Ctrl (Cmd на Mac) для выбора нескольких сотрудников</small>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="TaskType" class="form-label">Тип отчётности</label>
+                <select asp-for="TaskType" class="form-select" id="taskTypeSelect">
+                    <option value="0">Разовое</option>
+                    <option value="1">Ежедневное</option>
+                    <option value="2">Еженедельное</option>
+                </select>
+            </div>
+
+            <div class="mb-3" id="periodicityGroup" style="display: none;">
+                <label asp-for="ReportPeriodicity" class="form-label">Периодичность отчёта</label>
+                <select asp-for="ReportPeriodicity" class="form-select" id="periodicitySelect">
+                    <option value="0">Нет</option>
+                    <option value="1">Ежедневно</option>
+                    <option value="2">Еженедельно</option>
+                    <option value="3">Ежемесячно</option>
+                    <option value="4">Постоянно</option>
+                </select>
+            </div>
+
+            <div class="mb-3" id="reportTimeGroup" style="display: none;">
+                <label class="form-label">Время сдачи отчёта</label>
+                <input type="time" asp-for="ReportTime" class="form-control" />
+            </div>
+
+            <div class="mb-3" id="weekDayGroup" style="display: none;">
+                <label class="form-label">День недели (для еженедельного)</label>
+                <select asp-for="ReportWeekDay" class="form-select">
+                    <option value="">— Выберите —</option>
+                    <option value="0">Понедельник</option>
+                    <option value="1">Вторник</option>
+                    <option value="2">Среда</option>
+                    <option value="3">Четверг</option>
+                    <option value="4">Пятница</option>
+                    <option value="5">Суббота</option>
+                    <option value="6">Воскресенье</option>
+                </select>
+            </div>
+
+            <div class="mb-3" id="monthDayGroup" style="display: none;">
+                <label class="form-label">День месяца (для ежемесячного) 1-31</label>
+                <input asp-for="ReportMonthDay" type="number" min="1" max="31" class="form-control" />
+            </div>
+        </div>
     </div>
 
     <button type="submit" class="btn btn-primary">Создать</button>
@@ -55,5 +167,33 @@
 </form>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        const taskTypeSelect = document.getElementById('taskTypeSelect');
+        const periodicityGroup = document.getElementById('periodicityGroup');
+        const periodicitySelect = document.getElementById('periodicitySelect');
+        const reportTimeGroup = document.getElementById('reportTimeGroup');
+        const weekDayGroup = document.getElementById('weekDayGroup');
+        const monthDayGroup = document.getElementById('monthDayGroup');
+
+        function togglePeriodicityFields() {
+            const taskType = parseInt(taskTypeSelect.value);
+            // Если задание не разовое (1 - ежедневное, 2 - еженедельное) - показываем блок периодичности
+            if (taskType === 1 || taskType === 2) {
+                periodicityGroup.style.display = 'block';
+                const periodicity = parseInt(periodicitySelect.value);
+                reportTimeGroup.style.display = 'block';
+                weekDayGroup.style.display = (periodicity === 2) ? 'block' : 'none';  // для еженедельного
+                monthDayGroup.style.display = (periodicity === 3) ? 'block' : 'none'; // для ежемесячного
+            } else {
+                periodicityGroup.style.display = 'none';
+                reportTimeGroup.style.display = 'none';
+                weekDayGroup.style.display = 'none';
+                monthDayGroup.style.display = 'none';
+            }
+        }
+
+        taskTypeSelect.addEventListener('change', togglePeriodicityFields);
+        periodicitySelect.addEventListener('change', togglePeriodicityFields);
+        togglePeriodicityFields();
+    </script>
 }

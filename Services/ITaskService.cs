@@ -60,5 +60,11 @@ namespace WorkProcesses.Services
         Task<Report?> GetReportByIdAsync(int reportId);
         Task<int> GetTaskIdByReportIdAsync(int reportId);
 
+        Task<List<ReferenceItem>> GetAvailableResourcesAsync(string userId, bool isAdmin, bool isServiceHead, bool isDepartmentHead, int? departmentId);
+        Task<List<ReferenceItem>> GetWorkTypesAsync();
+        Task<List<ReferenceItem>> GetWorkBasesAsync();
+        Task<List<ReferenceItem>> GetPrioritiesAsync();
+        Task<List<ReferenceItem>> GetProjectsAsync();
+
     }
 }

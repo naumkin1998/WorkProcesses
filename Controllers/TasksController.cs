@@ -49,21 +49,30 @@ namespace WorkProcesses.Controllers
             var isServiceHead = User.IsInRole(RoleNames.ServiceHead);
             var isDepartmentHead = User.IsInRole(RoleNames.DepartmentHead);
 
-            // Проверка прав на создание
             if (!isAdmin && !isServiceHead && !isDepartmentHead)
                 return RedirectToAction(nameof(Index));
 
-            var employees = await _taskService.GetAvailableEmployeesAsync(
-                currentUser.Id,
-                isAdmin,
-                isServiceHead,
-                isDepartmentHead);
+            // Доступные сотрудники
+            var employees = await _taskService.GetAvailableEmployeesAsync(currentUser.Id, isAdmin, isServiceHead, isDepartmentHead);
+
+            // Справочники
+            var resources = await _taskService.GetAvailableResourcesAsync(currentUser.Id, isAdmin, isServiceHead, isDepartmentHead, currentUser.DepartmentId);
+            var workTypes = await _taskService.GetWorkTypesAsync();
+            var workBases = await _taskService.GetWorkBasesAsync();
+            var priorities = await _taskService.GetPrioritiesAsync();
+            var projects = await _taskService.GetProjectsAsync();
 
             var model = new TaskViewModel
             {
                 Deadline = DateTime.Now.AddDays(3),
+                StartTime = DateTime.Now,
                 TaskType = TaskType.Single,
-                Employees = employees
+                Employees = employees,
+                Resources = resources,
+                WorkTypes = workTypes,
+                WorkBases = workBases,
+                Priorities = priorities,
+                Projects = projects
             };
             return View(model);
         }
@@ -83,15 +92,16 @@ namespace WorkProcesses.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Если ошибка — перезагружаем список сотрудников
+            // В случае ошибки перезагружаем справочники и возвращаем форму
             var isAdmin = User.IsInRole(RoleNames.Admin);
             var isServiceHead = User.IsInRole(RoleNames.ServiceHead);
             var isDepartmentHead = User.IsInRole(RoleNames.DepartmentHead);
-            model.Employees = await _taskService.GetAvailableEmployeesAsync(
-                currentUser.Id,
-                isAdmin,
-                isServiceHead,
-                isDepartmentHead);
+            model.Employees = await _taskService.GetAvailableEmployeesAsync(currentUser.Id, isAdmin, isServiceHead, isDepartmentHead);
+            model.Resources = await _taskService.GetAvailableResourcesAsync(currentUser.Id, isAdmin, isServiceHead, isDepartmentHead, currentUser.DepartmentId);
+            model.WorkTypes = await _taskService.GetWorkTypesAsync();
+            model.WorkBases = await _taskService.GetWorkBasesAsync();
+            model.Priorities = await _taskService.GetPrioritiesAsync();
+            model.Projects = await _taskService.GetProjectsAsync();
             return View(model);
         }
 

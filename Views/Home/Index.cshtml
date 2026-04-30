@@ -1,8 +1,188 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model HomeViewModel
+@using Microsoft.AspNetCore.Identity
+@using WorkProcesses.Controllers
+@using WorkProcesses.Models
+@inject UserManager<AppUser> UserManager
+
+@{
+    ViewData["Title"] = "Рабочая панель";
+
+    var currentUser = Model.CurrentUser;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Левая колонка: список сотрудников -->
+        <div class="col-md-3 border-end" style="max-height: 90vh; overflow-y: auto;">
+            <h5>Сотрудники</h5>
+            <div class="list-group">
+                @foreach (var emp in Model.Employees)
+
+                {
+                    string activeClass = emp.Id == Model.SelectedUserId ? "active" : "";
+                    <a href="@Url.Action("Index", new { selectedUserId = emp.Id })"
+                       class="list-group-item list-group-item-action @activeClass d-flex justify-content-between align-items-center">
+                        @emp.FullName
+                        <span class="badge rounded-pill" style="background-color: @emp.StatusColor;">@emp.StatusIcon</span>
+                    </a>
+                }
+            </div>
+        </div>
+
+        <!-- Центральная колонка: задания выбранного сотрудника -->
+        <div class="col-md-9">
+            <h4>
+                Задания
+                @if (Model.SelectedUserId == currentUser.Id)
+
+                {
+                    <span>для меня</span>
+                }
+
+                else
+
+                {
+                    <span>для @Model.Employees.FirstOrDefault(e => e.Id == Model.SelectedUserId)?.FullName</span>
+                }
+            </h4>
+
+            @if (!Model.Tasks.Any())
+            {
+                <div class="alert alert-info">Нет активных заданий</div>
+            }
+            else
+            {
+                <div class="list-group">
+                    @foreach (var item in Model.Tasks)
+                    {
+
+                        var task = item.Task;
+
+                        var assign = item.Assignment;
+                        <div class="list-group-item @item.RowColorClass">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">
+                                    @task.Title
+                                    @if (task.IsImportant)
+
+                                    {
+                                        <span class="badge bg-danger">Важно!</span>
+                                    }
+                                    @if (task.Priority != null)
+
+                                    {
+                                        <span class="badge bg-secondary">@task.Priority.Name</span>
+                                    }
+                                </h5>
+                                <small>Срок: @task.Deadline.ToString("HH:mm dd.MM.yyyy")</small>
+                            </div>
+                            <p class="mb-1 text-muted">@task.Description</p>
+                            @if (task.Project != null)
+                            {
+                                <div class="small text-secondary">Проект: @task.Project.Name</div>
+                            }
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <div>
+                                    @if (item.CanStartWork)
+
+                                    {
+                                        <button class="btn btn-sm btn-success" onclick="startWork(@assign.Id)">▶ Взять в работу</button>
+                                    }
+                                    @if (item.CanStopWork)
+
+                                    {
+                                        <button class="btn btn-sm btn-warning" onclick="stopWork(@assign.Id)">⏸ Остановить</button>
+                                        <span id="timer-@assign.Id" class="ms-2 badge bg-secondary">00:00</span>
+                                    }
+                                    @if (item.CanSubmitReport)
+
+                                    {
+                                        <button class="btn btn-sm btn-primary" onclick="showReportModal(@assign.Id)">📝 Сдать отчёт</button>
+                                    }
+                                </div>
+                                <a asp-controller="Tasks" asp-action="Details" asp-route-id="@task.Id" class="btn btn-sm btn-info">Детали</a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
 </div>
+
+<!-- Модальное окно для сдачи отчёта -->
+<div class="modal fade" id="reportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Сдать отчёт</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="currentAssignmentId" />
+                <div class="mb-3">
+                    <label class="form-label">Текст отчёта</label>
+                    <textarea id="reportText" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Дата отчёта</label>
+                    <input type="date" id="reportForDate" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="submitReport()">Отправить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function startWork(assignmentId) {
+            $.post('@Url.Action("StartWork", "Home")', { assignmentId: assignmentId })
+                .done(() => location.reload())
+                .fail(xhr => alert(xhr.responseText || "Ошибка старта работы"));
+        }
+
+        function stopWork(assignmentId) {
+            $.post('@Url.Action("StopWork", "Home")', { assignmentId: assignmentId })
+                .done(() => location.reload())
+                .fail(xhr => alert(xhr.responseText || "Ошибка остановки"));
+        }
+
+        let currentAssignmentIdForReport = null;
+        function showReportModal(assignmentId) {
+            currentAssignmentIdForReport = assignmentId;
+            $('#currentAssignmentId').val(assignmentId);
+            $('#reportText').val('');
+            $('#reportModal').modal('show');
+        }
+
+        function submitReport() {
+            const assignmentId = $('#currentAssignmentId').val();
+            const text = $('#reportText').val();
+            const forDate = $('#reportForDate').val();
+
+            $.post('@Url.Action("SubmitReport", "Home")', { assignmentId: assignmentId, reportText: text, forDate: forDate })
+                .done(() => {
+                    $('#reportModal').modal('hide');
+                    location.reload();
+                })
+                .fail(xhr => alert(xhr.responseText || "Ошибка сдачи отчёта"));
+        }
+
+        setInterval(() => {
+            $('[id^="timer-"]').each(function() {
+                const assignmentId = this.id.split('-')[1];
+                $.get('@Url.Action("GetWorkDuration", "Home")', { assignmentId: assignmentId }, function(data) {
+                    const seconds = data.seconds;
+                    const minutes = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    $(`#timer-${assignmentId}`).text(`${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`);
+                });
+            });
+        }, 1000);
+    </script>
+}

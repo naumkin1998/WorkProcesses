@@ -42,6 +42,15 @@ namespace WorkProcesses.Data
 
         public DbSet<TaskAssignment> TaskAssignments { get; set; }
 
+        public DbSet<Resource> Resources { get; set; }
+        public DbSet<ResourceType> ResourceTypes { get; set; }
+        public DbSet<WorkType> WorkTypes { get; set; }
+        public DbSet<WorkBasis> WorkBases { get; set; }
+        public DbSet<Priority> Priorities { get; set; }
+        public DbSet<Project> Projects { get; set; }
+        public DbSet<DispatchCenter> DispatchCenters { get; set; }
+        public DbSet<ResourceDepartment> ResourceDepartments { get; set; }
+
         /// <summary>
         /// Настройка связей между таблицами (Fluent API)
         /// Этот метод вызывается при создании модели БД

@@ -49,7 +49,7 @@ namespace WorkProcesses.Services
             {
                 Title = model.Title,
                 Description = model.Description,
-                Deadline = model.Deadline,
+                Deadline = model.ReportPeriodicity == ReportPeriodicity.Permanent ? DateTime.MaxValue : (model.Deadline ?? DateTime.Now),  // model.Deadline у вас DateTime? (в модели представления nullable)
                 StartTime = model.StartTime,
                 TaskType = model.TaskType,  // можно позже заменить на ReportPeriodicity
                 AssignedById = assignedById,
@@ -289,5 +289,24 @@ namespace WorkProcesses.Services
         public async Task<List<ReferenceItem>> GetWorkBasesAsync() => await _context.WorkBases.Select(w => new ReferenceItem { Id = w.Id, Name = w.Name }).ToListAsync();
         public async Task<List<ReferenceItem>> GetPrioritiesAsync() => await _context.Priorities.Select(p => new ReferenceItem { Id = p.Id, Name = p.Name }).ToListAsync();
         public async Task<List<ReferenceItem>> GetProjectsAsync() => await _context.Projects.Select(p => new ReferenceItem { Id = p.Id, Name = p.Name }).ToListAsync();
+
+        public async Task<bool> DeleteTaskAsync(int taskId, string userId, bool isAdmin, bool isServiceHead, bool isDepartmentHead, int? departmentId)
+        {
+            var task = await _context.Tasks
+                .Include(t => t.Assignments)
+                .FirstOrDefaultAsync(t => t.Id == taskId);
+            if (task == null) return false;
+
+            // Проверка прав: админ, начальник службы, начальник отдела (если задание в его отделе) или автор
+            bool canDelete = isAdmin || isServiceHead ||
+                             (isDepartmentHead && task.Assignments.Any(a => a.AppUser.DepartmentId == departmentId)) ||
+                             task.AssignedById == userId;
+            if (!canDelete) return false;
+
+            _context.Tasks.Remove(task);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
     }
 }

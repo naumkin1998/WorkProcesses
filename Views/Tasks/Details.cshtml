@@ -34,7 +34,21 @@
                 <p><strong>Описание:</strong> @(string.IsNullOrEmpty(Model.Description) ? "—" : Model.Description)</p>
                 <p><strong>Кому:</strong> @(Model.AssignedTo?.FullName ?? "—")</p>
                 <p><strong>Кто выдал:</strong> @(Model.AssignedBy?.FullName ?? "—")</p>
-                <p><strong>Срок:</strong> @Model.Deadline.ToString("dd.MM.yyyy HH:mm")</p>
+                <p>
+                    <strong>Срок:</strong> @if (Model.Deadline.Year >= 9998)
+
+
+
+                    {
+                        <span>Без срока</span>
+                    }
+
+                    else
+
+                    {
+                        <span>@Model.Deadline.ToString("dd.MM.yyyy HH:mm")</span>
+                    }
+                </p>
                 <p><strong>Тип:</strong> 
                     @if (Model.TaskType == TaskType.Single)
                     {

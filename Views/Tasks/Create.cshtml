@@ -1,6 +1,6 @@
-﻿@model TaskViewModel
-@using WorkProcesses.Models
+﻿@using WorkProcesses.Models
 @using WorkProcesses.ViewModels
+@model TaskViewModel
 @{
     ViewData["Title"] = "Новое задание";
 }
@@ -24,12 +24,14 @@
 
             <div class="mb-3">
                 <label asp-for="StartTime" class="form-label">Дата начала</label>
-                <input asp-for="StartTime" type="datetime-local" class="form-control" />
+                <input asp-for="StartTime" type="datetime-local" class="form-control"
+                 value="@(Model.Deadline.HasValue ? Model.Deadline.Value.ToString("yyyy-MM-ddTHH:mm:ss") : "")" />
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3" id="deadlineGroup">
                 <label asp-for="Deadline" class="form-label">Срок выполнения *</label>
-                <input asp-for="Deadline" type="datetime-local" class="form-control" required />
+                <input asp-for="Deadline" type="datetime-local" class="form-control" 
+                 value="@(Model.Deadline.HasValue ? Model.Deadline.Value.ToString("yyyy-MM-ddTHH:mm:ss") : "")" />
             </div>
 
             <div class="mb-3">
@@ -37,7 +39,6 @@
                 <select asp-for="ResourceId" class="form-select">
                     <option value="">— Не выбран —</option>
                     @foreach (var r in Model.Resources)
-
                     {
                         <option value="@r.Id">@r.Name</option>
                     }
@@ -49,7 +50,6 @@
                 <select asp-for="WorkTypeId" class="form-select">
                     <option value="">— Не выбран —</option>
                     @foreach (var wt in Model.WorkTypes)
-
                     {
                         <option value="@wt.Id">@wt.Name</option>
                     }
@@ -61,7 +61,6 @@
                 <select asp-for="WorkBasisId" class="form-select">
                     <option value="">— Не выбрано —</option>
                     @foreach (var wb in Model.WorkBases)
-
                     {
                         <option value="@wb.Id">@wb.Name</option>
                     }
@@ -78,7 +77,6 @@
                 <select asp-for="PriorityId" class="form-select">
                     <option value="">— Не выбран —</option>
                     @foreach (var p in Model.Priorities)
-
                     {
                         <option value="@p.Id">@p.Name</option>
                     }
@@ -90,7 +88,6 @@
                 <select asp-for="ProjectId" class="form-select">
                     <option value="">— Не выбран —</option>
                     @foreach (var proj in Model.Projects)
-
                     {
                         <option value="@proj.Id">@proj.Name</option>
                     }
@@ -106,14 +103,18 @@
         <div class="col-md-6">
             <div class="mb-3">
                 <label class="form-label">Исполнители *</label>
-                <select asp-for="SelectedEmployeeIds" class="form-select" multiple size="8" required>
+                <div class="border p-2" style="max-height: 200px; overflow-y: auto;">
                     @foreach (var emp in Model.Employees)
 
                     {
-                        <option value="@emp.Id">@emp.FullName (@emp.DepartmentName)</option>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="SelectedEmployeeIds" value="@emp.Id" id="emp_@emp.Id" />
+                            <label class="form-check-label" for="emp_@emp.Id">
+                                @emp.FullName (@emp.DepartmentName)
+                            </label>
+                        </div>
                     }
-                </select>
-                <small class="text-muted">Удерживайте Ctrl (Cmd на Mac) для выбора нескольких сотрудников</small>
+                </div>
             </div>
 
             <div class="mb-3">
@@ -174,26 +175,38 @@
         const reportTimeGroup = document.getElementById('reportTimeGroup');
         const weekDayGroup = document.getElementById('weekDayGroup');
         const monthDayGroup = document.getElementById('monthDayGroup');
+        const deadlineGroup = document.getElementById('deadlineGroup');
+        const deadlineInput = document.getElementById('Deadline');
 
-        function togglePeriodicityFields() {
+        function toggleFields() {
             const taskType = parseInt(taskTypeSelect.value);
-            // Если задание не разовое (1 - ежедневное, 2 - еженедельное) - показываем блок периодичности
+            // Показываем блок периодичности только для ежедневных/еженедельных
             if (taskType === 1 || taskType === 2) {
                 periodicityGroup.style.display = 'block';
                 const periodicity = parseInt(periodicitySelect.value);
                 reportTimeGroup.style.display = 'block';
-                weekDayGroup.style.display = (periodicity === 2) ? 'block' : 'none';  // для еженедельного
-                monthDayGroup.style.display = (periodicity === 3) ? 'block' : 'none'; // для ежемесячного
+                weekDayGroup.style.display = (periodicity === 2) ? 'block' : 'none';
+                monthDayGroup.style.display = (periodicity === 3) ? 'block' : 'none';
+                // Если периодичность "Постоянно" (значение 4) – скрываем срок выполнения
+                if (periodicity === 4) {
+                    deadlineGroup.style.display = 'none';
+                    deadlineInput.removeAttribute('required');
+                } else {
+                    deadlineGroup.style.display = 'block';
+                    deadlineInput.setAttribute('required', 'required');
+                }
             } else {
                 periodicityGroup.style.display = 'none';
                 reportTimeGroup.style.display = 'none';
                 weekDayGroup.style.display = 'none';
                 monthDayGroup.style.display = 'none';
+                deadlineGroup.style.display = 'block';
+                deadlineInput.setAttribute('required', 'required');
             }
         }
 
-        taskTypeSelect.addEventListener('change', togglePeriodicityFields);
-        periodicitySelect.addEventListener('change', togglePeriodicityFields);
-        togglePeriodicityFields();
+        taskTypeSelect.addEventListener('change', toggleFields);
+        periodicitySelect.addEventListener('change', toggleFields);
+        toggleFields(); // инициализация при загрузке
     </script>
 }

@@ -11,7 +11,7 @@ namespace WorkProcesses.ViewModels
 
         // Даты
         public DateTime? StartTime { get; set; }
-        public DateTime Deadline { get; set; } = DateTime.Now.AddDays(3);
+        public DateTime? Deadline { get; set; } = DateTime.Now.AddDays(3);
 
         // Справочники
         public int? ResourceId { get; set; }

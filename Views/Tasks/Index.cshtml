@@ -48,7 +48,16 @@
                 <td>@task.Title</td>
                 <td>@(task.AssignedTo?.FullName ?? "—")</td>
                 <td>@(task.AssignedBy?.FullName ?? "—")</td>
-                <td>@task.Deadline.ToString("dd.MM.yyyy")</td>
+                <td>
+                    @if (task.Deadline.Year >= 9998)
+                    {
+                        <span>Без срока</span>
+                    }
+                    else
+                    {
+                        <span>@task.Deadline.ToString("dd.MM.yyyy HH:mm")</span>
+                    }
+                </td>
                 <td>
                     @if (task.TaskType == TaskType.Single)
                     {
@@ -78,10 +87,21 @@
                     }
                 </td>
                 <td>@task.Reports.Count</td>
+                @if (User.IsInRole("Admin") || User.IsInRole("ServiceHead") || (User.IsInRole("DepartmentHead") && task.Assignments.Any(a => a.AppUser.DepartmentId == currentUser.DepartmentId)))
+
+                {
+                    <td>
+                        <form method="post" asp-action="Delete" asp-route-id="@task.Id" onsubmit="return confirm('Удалить задание?');">
+                            <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                        </form>
+                    </td>
+                }
                 <td>
                     <a asp-action="Details" asp-route-id="@task.Id" class="btn btn-sm btn-info">Подробнее</a>
                  </td>
+
              </tr>
+
         }
     </tbody>
 </table>

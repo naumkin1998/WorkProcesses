@@ -74,7 +74,19 @@
                                         <span class="badge bg-secondary">@task.Priority.Name</span>
                                     }
                                 </h5>
-                                <small>Срок: @task.Deadline.ToString("HH:mm dd.MM.yyyy")</small>
+                                <small>
+                                    Срок: @if (task.Deadline.Year >= 9998)
+
+                                    {
+                                        <span>Без срока</span>
+                                    }
+
+                                    else
+
+                                    {
+                                        <span>@task.Deadline.ToString("dd.MM.yyyy HH:mm")</span>
+                                    }
+                                </small>
                             </div>
                             <p class="mb-1 text-muted">@task.Description</p>
                             @if (task.Project != null)

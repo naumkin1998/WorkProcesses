@@ -66,5 +66,6 @@ namespace WorkProcesses.Services
         Task<List<ReferenceItem>> GetPrioritiesAsync();
         Task<List<ReferenceItem>> GetProjectsAsync();
 
+        Task<bool> DeleteTaskAsync(int taskId, string userId, bool isAdmin, bool isServiceHead, bool isDepartmentHead, int? departmentId);
     }
 }

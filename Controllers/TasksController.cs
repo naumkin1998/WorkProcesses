@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WorkProcesses.Models;
 using WorkProcesses.Services;
 using WorkProcesses.ViewModels;
+using WorkProcesses.Data;
 
 namespace WorkProcesses.Controllers
 {
@@ -261,5 +263,27 @@ namespace WorkProcesses.Controllers
             }
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Отчёты_задания_{id}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null) return Challenge();
+
+            var isAdmin = User.IsInRole(RoleNames.Admin);
+            var isServiceHead = User.IsInRole(RoleNames.ServiceHead);
+            var isDepartmentHead = User.IsInRole(RoleNames.DepartmentHead);
+
+            var result = await _taskService.DeleteTaskAsync(id, currentUser.Id, isAdmin, isServiceHead, isDepartmentHead, currentUser.DepartmentId);
+            if (!result)
+            {
+                TempData["Error"] = "Не удалось удалить задание. Проверьте права.";
+                return RedirectToAction(nameof(Index));
+            }
+            TempData["Success"] = "Задание удалено.";
+            return RedirectToAction(nameof(Index));
+        }
+
     }
 }

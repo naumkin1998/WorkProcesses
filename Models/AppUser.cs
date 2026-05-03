@@ -57,11 +57,11 @@ namespace WorkProcesses.Models
         public string StatusIcon => CurrentStatus switch
         {
             StatusType.Present => "🟢",
-            StatusType.Remote => "🟢💻",
+            StatusType.Remote => "💻",
             StatusType.Absent => "🔴",
-            StatusType.Vacation => "🟡🏖️",
-            StatusType.Sick => "🟡🤒",
-            StatusType.BusinessTrip => "🟡✈️",
+            StatusType.Vacation => "🏖️",
+            StatusType.Sick => "🤒",
+            StatusType.BusinessTrip => "✈️",
             _ => "⚪"
         };
 

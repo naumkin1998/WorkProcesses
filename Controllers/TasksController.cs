@@ -22,7 +22,7 @@ namespace WorkProcesses.Controllers
         }
 
         // GET: /Tasks
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? filterDate, string? filterType)
         {
             var currentUser = await _userManager.GetUserAsync(User);
             if (currentUser == null) return Challenge();
@@ -37,6 +37,49 @@ namespace WorkProcesses.Controllers
                 isServiceHead,
                 isDepartmentHead,
                 currentUser.DepartmentId);
+
+            // Логика фильтрации по дате
+            DateTime start = DateTime.Today;
+            DateTime end = DateTime.Today.AddDays(1).AddSeconds(-1);
+            bool useDateFilter = false;
+
+            if (!string.IsNullOrEmpty(filterType))
+            {
+                switch (filterType.ToLower())
+                {
+                    case "today":
+                        start = DateTime.Today;
+                        end = start.AddDays(1).AddSeconds(-1);
+                        useDateFilter = true;
+                        break;
+                    case "week":
+                        start = DateTime.Today;
+                        end = start.AddDays(7);
+                        useDateFilter = true;
+                        break;
+                    case "month":
+                        start = DateTime.Today;
+                        end = start.AddMonths(1);
+                        useDateFilter = true;
+                        break;
+                }
+            }
+            else if (!string.IsNullOrEmpty(filterDate) && DateTime.TryParse(filterDate, out var customDate))
+            {
+                start = customDate.Date;
+                end = start.AddDays(1).AddSeconds(-1);
+                useDateFilter = true;
+            }
+
+            if (useDateFilter)
+            {
+                tasks = tasks.Where(t => t.Deadline >= start && t.Deadline <= end).ToList();
+                ViewBag.FilterDate = start;
+            }
+            else
+            {
+                ViewBag.FilterDate = null;
+            }
 
             return View(tasks);
         }
@@ -145,7 +188,7 @@ namespace WorkProcesses.Controllers
                 TempData["Error"] = "Не удалось сдать отчёт. Возможно, задание уже выполнено или вы не исполнитель.";
             else
                 TempData["Success"] = "Отчёт успешно сдан! Ожидает проверки.";
-
+           
             return RedirectToAction(nameof(Details), new { id = taskId });
         }
 

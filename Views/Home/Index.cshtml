@@ -136,10 +136,7 @@
                     <label class="form-label">Текст отчёта</label>
                     <textarea id="reportText" class="form-control" rows="3" required></textarea>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Дата отчёта</label>
-                    <input type="date" id="reportForDate" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
-                </div>
+                
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
@@ -175,7 +172,12 @@
         function submitReport() {
             const assignmentId = $('#currentAssignmentId').val();
             const text = $('#reportText').val();
-            const forDate = $('#reportForDate').val();
+            const forDate = new Date().toISOString().split('T')[0]; // текущая дата
+
+            if (!text.trim()) {
+                alert("Введите текст отчёта");
+                return;
+            }
 
             $.post('@Url.Action("SubmitReport", "Home")', { assignmentId: assignmentId, reportText: text, forDate: forDate })
                 .done(() => {

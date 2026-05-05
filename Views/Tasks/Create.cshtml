@@ -25,13 +25,13 @@
             <div class="mb-3">
                 <label asp-for="StartTime" class="form-label">Дата начала</label>
                 <input asp-for="StartTime" type="datetime-local" class="form-control"
-                 value="@(Model.Deadline.HasValue ? Model.Deadline.Value.ToString("yyyy-MM-ddTHH:mm:ss") : "")" />
+                 value="@(Model.Deadline.HasValue ? Model.Deadline.Value.ToString("yyyy-MM-ddTHH:mm") : "")" />
             </div>
 
             <div class="mb-3" id="deadlineGroup">
                 <label asp-for="Deadline" class="form-label">Срок выполнения *</label>
                 <input asp-for="Deadline" type="datetime-local" class="form-control" 
-                 value="@(Model.Deadline.HasValue ? Model.Deadline.Value.ToString("yyyy-MM-ddTHH:mm:ss") : "")" />
+                 value="@(Model.Deadline.HasValue ? Model.Deadline.Value.ToString("yyyy-MM-ddTHH:mm") : "")" />
             </div>
 
             <div class="mb-3">

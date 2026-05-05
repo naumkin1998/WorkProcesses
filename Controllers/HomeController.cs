@@ -180,8 +180,22 @@ namespace WorkProcesses.Controllers
             if (assignment.IsInWork && assignment.WorkStartTime.HasValue)
                 totalSeconds += (int)(DateTime.Now - assignment.WorkStartTime.Value).TotalSeconds;
 
+
             if (totalSeconds < 10)
                 return BadRequest("Для сдачи отчёта необходимо проработать над заданием не менее 10 секунд");
+
+            // Проверка на пустой текст
+            if (string.IsNullOrWhiteSpace(reportText))
+                return BadRequest("Текст отчёта не может быть пустым");
+
+            // Для разового задания: можно сдать только один отчёт
+            if (assignment.TaskItem.TaskType == TaskType.Single)
+            {
+                var alreadyReported = await _context.Reports
+                    .AnyAsync(r => r.TaskItemId == assignment.TaskItemId && r.AppUserId == user.Id);
+                if (alreadyReported)
+                    return BadRequest("Вы уже сдали отчёт по этому заданию. Редактируйте существующий.");
+            }
 
             var report = new Report
             {

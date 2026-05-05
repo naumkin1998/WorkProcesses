@@ -106,6 +106,13 @@ namespace WorkProcesses.Services
             if (task == null) return false;
             if (task.IsCompleted) return false;
 
+            //Проверка на несколько отчетов
+            if (task.TaskType == TaskType.Single)
+            {
+                var existing = await _context.Reports.AnyAsync(r => r.TaskItemId == taskId && r.AppUserId == userId);
+                if (existing) return false;
+            }
+
             // Проверка, что пользователь является исполнителем
             var isAssignee = await _context.TaskAssignments.AnyAsync(a => a.TaskItemId == taskId && a.AppUserId == userId);
             if (!isAssignee) return false;
